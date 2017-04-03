@@ -11,7 +11,7 @@ var User = mongoose.model('User',{
 });
 module.exports = {User}
 // var user = new User({
-//   email: 'billy@mintsocial.com     '
+//   email: 'steve@mintsocial.com     '
 // });
 //
 // user.save().then((doc)=>{
