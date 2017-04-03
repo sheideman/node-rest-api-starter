@@ -12,8 +12,8 @@ if (!ObjectID.isValid(id)){
 //
 // Todo.findOneAndRemove({}).then(()=>{
 //
-// })//returns record back for use or recovery.
+// })//returns record back for use or recovery. query by more than id if needed.
 
 Todo.findByIdAndRemove('58e2b49b27b5694a1224953f').then((todo)=>{
   console.log(todo);
-});
+});//returns record back. query by id only
