@@ -4,48 +4,73 @@ const jwt = require('jsonwebtoken');
 const _ = require('lodash');
 
 var UserSchema = new mongoose.Schema({
-  email:{
-    type:String,
-    required:[true,'Valid email is required!'],
-    minlength: 1,
-    unique: true,
-    trim:true,
-    validate:{
-      isAsync: true,
-      validator: validator.isEmail,
-      message: '{VALUE} is not a valid email'
-    }
-  },
-  password:{
-    type:String,
-    required:true,
-    minlength:12
-  },
-  tokens: [{
-      access: {
-        type:String,
-        required: true
-      },
-      token: {
-        type:String,
-        required:true
-      }
+    email: {
+        type: String,
+        required: [true, 'Valid email is required!'],
+        minlength: 1,
+        unique: true,
+        trim: true,
+        validate: {
+            isAsync: true,
+            validator: validator.isEmail,
+            message: '{VALUE} is not a valid email'
+        }
+    },
+    password: {
+        type: String,
+        required: true,
+        minlength: 12
+    },
+    tokens: [{
+        access: {
+            type: String,
+            required: true
+        },
+        token: {
+            type: String,
+            required: true
+        }
     }]
 });
-UserSchema.methods.toJSON = function(){
-  var user = this;
-  var userObject = user.toObject();
-  return _.pick(userObject, ['_id', 'email']);
+UserSchema.methods.toJSON = function() {
+    var user = this;
+    var userObject = user.toObject();
+    return _.pick(userObject, ['_id', 'email']);
 }
-UserSchema.methods.generateAuthToken = function(){
-  var user = this;
-  var access = 'auth';
-  var token = jwt.sign({_id: user._id.toHexString(), access},'theeaglehaslanded').toString();
+UserSchema.methods.generateAuthToken = function() {
+    var user = this;
+    var access = 'auth';
+    var token = jwt.sign({
+        _id: user._id.toHexString(),
+        access
+    }, 'theeaglehaslanded').toString();
 
-  user.tokens.push({access, token});
-return user.save().then(()=>{
-    return token;
-  });
+    user.tokens.push({
+        access,
+        token
+    });
+    return user.save().then(() => {
+        return token;
+    });
 };
+
+UserSchema.statics.findByToken = function(token) {
+    var User = this; //model methods get called with model binding hence capital 'U'
+    var decoded;
+
+    try {
+        decoded = jwt.verify(token, 'theeaglehaslanded')
+    } catch (e) {
+        return Promise.reject();
+    }
+    return User.findOne({
+        '_id': decoded._id,
+        'tokens.token': token, //'' required when calling nested methods with . syntax
+        'tokens.access': 'auth'
+    });
+};
+
 var User = mongoose.model('User', UserSchema);
-module.exports = {User}
+module.exports = {
+    User
+}
