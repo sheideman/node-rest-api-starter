@@ -54,7 +54,14 @@ UserSchema.methods.generateAuthToken = function() {
         return token;
     });
 };
-
+UserSchema.methods.removeToken = function(token){
+  var user = this;//instance method. Need to define this or it won't bind.
+return user.update({
+    $pull:{
+      tokens:{token}
+    }
+  });
+};
 UserSchema.statics.findByToken = function(token) {
     var User = this; //model methods get called with model binding hence capital 'U'
     var decoded;
@@ -85,12 +92,9 @@ UserSchema.statics.findByCredentials = function(email, password) {
           reject();
         }
       });
-      //resolve
-      //reject
     })
   });
 };
-
 UserSchema.pre('save', function(next){
   var user = this;
 
@@ -105,6 +109,7 @@ UserSchema.pre('save', function(next){
     next();
   }
 })
+
 var User = mongoose.model('User', UserSchema);
 module.exports = {
     User
