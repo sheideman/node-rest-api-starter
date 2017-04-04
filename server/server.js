@@ -125,7 +125,18 @@ app.post('/v1/users', (req, res) => {
         res.status(400).send();
     });
 });
+//POST /v1/users/login
+app.post('/v1/users/login', (req, res) => {
+    var body = _.pick(req.body, ['email', 'password']);
 
+    User.findByCredentials(body.email, body.password).then((user)=>{
+      return user.generateAuthToken().then((token)=>{
+        res.header('x-auth', token).send(user);
+      })
+    }).catch((e)=>{
+      res.status(400).send();
+    });
+});
 //PRIVATE ROUTES
 
 app.get('/v1/users/me', authenticate, (req, res) => {
